@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import ProductModel from '@src/modules/products/models/Product';
-import { json } from 'stream/consumers';
+import ProductModel from '@src/models/Product';
+;
 
 
 export default class Product{

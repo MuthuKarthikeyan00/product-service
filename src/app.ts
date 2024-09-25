@@ -1,6 +1,6 @@
 import express, { Request, Response } from 'express';
 import dotenv from 'dotenv';
-import ProductsRouters from './modules/products/ProductsRouters';
+import ProductsRouters from './routes/ProductsRouters';
 import multer from 'multer';
 
 dotenv.config();
