@@ -1,0 +1,86 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id           Int           @id @default(autoincrement())
+  name         String
+  type_id      Int?
+  price        Float
+  description  String?
+  category_ids Int[]
+  attributes   Json?
+  parent_id    Int?
+  children     Product[]     @relation("ProductChildren")
+  weight       Float?
+  length       Float?
+  height       Float?
+  width        Float?
+  created_by   Int?
+  created_at   DateTime      @default(now())
+  updated_by   Int?
+  updated_at   DateTime?
+  parent       Product?      @relation("ProductChildren", fields: [parent_id], references: [id])
+  ProductType  ProductType?  @relation(fields: [type_id], references: [id])
+  StockRecord  StockRecord[]
+}
+
+model ProductType {
+  id          Int       @id @default(autoincrement())
+  name        String
+  description String?
+  products    Product[]
+  created_by  Int?
+  created_at  DateTime  @default(now())
+  updated_by  Int?
+  updated_at  DateTime?
+}
+
+model StockRecord {
+  id               Int       @id @default(autoincrement())
+  product_id       Int
+  quantity         Int
+  last_updated     DateTime  @default(now())
+  user_id          Int
+  change           Int
+  transaction_type String
+  created_by       Int?
+  created_at       DateTime  @default(now())
+  updated_by       Int?
+  updated_at       DateTime?
+  product          Product   @relation(fields: [product_id], references: [id])
+}
+
+model Category {
+  id            Int        @id @default(autoincrement())
+  name          String
+  description   String?
+  parent_id     Int?
+  created_by    Int?
+  created_at    DateTime   @default(now())
+  updated_by    Int?
+  updated_at    DateTime?
+  parent        Category?  @relation("CategoryToCategory", fields: [parent_id], references: [id])
+  subcategories Category[] @relation("CategoryToCategory")
+}
+
+model Attribute {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  description String?
+  created_by  Int?
+  created_at  DateTime  @default(now())
+  updated_by  Int?
+  updated_at  DateTime?
+}
