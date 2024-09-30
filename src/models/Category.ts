@@ -3,20 +3,20 @@ import { NonZeroPositiveNumber } from '@src/types/types';
 
 const prisma = new PrismaClient();
 
-type ProductParams = Prisma.ProductCreateInput;
+type params = Prisma.ProductCategoryCreateInput;
 
 
-export default class Product{
+export default class Category{
 
-    public static async create(params : ProductParams) {
-        return await prisma.product.create({
+    public static async create(params : params) {
+        return await prisma.productCategory.create({
             data: params
         })
     }
 
-    public static async update(id:number,params : ProductParams) {
+    public static async update(id:number,params : params) {
 
-        return await prisma.product.update({
+        return await prisma.productCategory.update({
             where: {
                 id,
               },
@@ -27,14 +27,16 @@ export default class Product{
 
     public static async get<T extends number>(id : NonZeroPositiveNumber<T> ) {
 
-        return await prisma.product.findUnique({
+        return await prisma.productCategory.findUnique({
             where: { id }
           });
     }
-    
+
     public static async isValid<T extends number>(id : NonZeroPositiveNumber<T> ) {
-        const product = await Product.get(id);
-        return !!product?.id
+
+        const category = await Category.get(id);
+        return !!category?.id
+        
     }
     
 

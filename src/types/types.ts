@@ -1,3 +1,7 @@
+
+export type NonZeroPositiveNumber<T extends number> = `${T}` extends `-${string}` | '0' ? never : T;
+
+
 export  type productParams =  {
     name: String,
     type_id: Number,

@@ -33,7 +33,7 @@ model Product {
   updated_at   DateTime?
   parent       Product?      @relation("ProductChildren", fields: [parent_id], references: [id])
   ProductType  ProductType?  @relation(fields: [type_id], references: [id])
-  StockRecord  StockRecord[]
+  ProductStockRecord  ProductStockRecord[]
 }
 
 model ProductType {
@@ -47,7 +47,7 @@ model ProductType {
   updated_at  DateTime?
 }
 
-model StockRecord {
+model ProductStockRecord {
   id               Int       @id @default(autoincrement())
   product_id       Int
   quantity         Int
@@ -62,7 +62,7 @@ model StockRecord {
   product          Product   @relation(fields: [product_id], references: [id])
 }
 
-model Category {
+model ProductCategory {
   id            Int        @id @default(autoincrement())
   name          String
   description   String?
@@ -71,11 +71,11 @@ model Category {
   created_at    DateTime   @default(now())
   updated_by    Int?
   updated_at    DateTime?
-  parent        Category?  @relation("CategoryToCategory", fields: [parent_id], references: [id])
-  subcategories Category[] @relation("CategoryToCategory")
+  parent        ProductCategory?  @relation("ProductCategoryToProductCategory", fields: [parent_id], references: [id])
+  subcategories ProductCategory[] @relation("ProductCategoryToProductCategory")
 }
 
-model Attribute {
+model ProductAttribute {
   id          Int       @id @default(autoincrement())
   name        String    @unique
   description String?

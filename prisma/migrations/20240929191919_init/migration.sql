@@ -34,7 +34,7 @@ CREATE TABLE "ProductType" (
 );
 
 -- CreateTable
-CREATE TABLE "StockRecord" (
+CREATE TABLE "ProductStockRecord" (
     "id" SERIAL NOT NULL,
     "product_id" INTEGER NOT NULL,
     "quantity" INTEGER NOT NULL,
@@ -47,11 +47,11 @@ CREATE TABLE "StockRecord" (
     "updated_by" INTEGER,
     "updated_at" TIMESTAMP(3),
 
-    CONSTRAINT "StockRecord_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "ProductStockRecord_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "Category" (
+CREATE TABLE "ProductCategory" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT,
@@ -61,11 +61,11 @@ CREATE TABLE "Category" (
     "updated_by" INTEGER,
     "updated_at" TIMESTAMP(3),
 
-    CONSTRAINT "Category_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "ProductCategory_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "Attribute" (
+CREATE TABLE "ProductAttribute" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT,
@@ -74,11 +74,11 @@ CREATE TABLE "Attribute" (
     "updated_by" INTEGER,
     "updated_at" TIMESTAMP(3),
 
-    CONSTRAINT "Attribute_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "ProductAttribute_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Attribute_name_key" ON "Attribute"("name");
+CREATE UNIQUE INDEX "ProductAttribute_name_key" ON "ProductAttribute"("name");
 
 -- AddForeignKey
 ALTER TABLE "Product" ADD CONSTRAINT "Product_parent_id_fkey" FOREIGN KEY ("parent_id") REFERENCES "Product"("id") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -87,7 +87,7 @@ ALTER TABLE "Product" ADD CONSTRAINT "Product_parent_id_fkey" FOREIGN KEY ("pare
 ALTER TABLE "Product" ADD CONSTRAINT "Product_type_id_fkey" FOREIGN KEY ("type_id") REFERENCES "ProductType"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "StockRecord" ADD CONSTRAINT "StockRecord_product_id_fkey" FOREIGN KEY ("product_id") REFERENCES "Product"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "ProductStockRecord" ADD CONSTRAINT "ProductStockRecord_product_id_fkey" FOREIGN KEY ("product_id") REFERENCES "Product"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Category" ADD CONSTRAINT "Category_parent_id_fkey" FOREIGN KEY ("parent_id") REFERENCES "Category"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "ProductCategory" ADD CONSTRAINT "ProductCategory_parent_id_fkey" FOREIGN KEY ("parent_id") REFERENCES "ProductCategory"("id") ON DELETE SET NULL ON UPDATE CASCADE;

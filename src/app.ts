@@ -14,7 +14,7 @@ app.use(express.urlencoded({ extended: true })); // for parsing application/x-ww
 
 
 // Initialize the router and use it
-app.use('/api/products',upload.none(), ProductsRouters.init());
+app.use('/api/product',upload.none(), ProductsRouters.init());
 
 
 export default app;
