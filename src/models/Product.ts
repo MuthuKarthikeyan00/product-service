@@ -32,7 +32,7 @@ export default class Product{
           });
     }
     
-    public static async isValid<T extends number>(id : NonZeroPositiveNumber<T> ) {
+    public static async isValid<T extends number>(id : NonZeroPositiveNumber<T> ) : Promise<boolean>{
         const product = await Product.get(id);
         return !!product?.id
     }
@@ -40,14 +40,13 @@ export default class Product{
 
 
     public static async getByName(name : string) {
-
         return await prisma.product.findUnique({
             where: { name }
           });
     }
 
 
-    public static async isNameExists(name : string) {
+    public static async isNameExists(name : string)  : Promise<boolean>{
         const product = await Product.getByName(name);
         return !!product?.id
     }

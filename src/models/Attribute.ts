@@ -32,6 +32,19 @@ export default class Attribute{
           });
     }
 
+    public static async getByName(name : string) {
+        return await prisma.productAttribute.findUnique({
+            where: { name }
+          });
+    }
+
+
+    public static async isNameExists(name : string)  : Promise<boolean>{
+        const attribute = await Attribute.getByName(name);
+        return !!attribute?.id
+    }
+    
+
     public static async isValid<T extends number>(id : NonZeroPositiveNumber<T> ) {
 
         const attribute = await Attribute.get(id);

@@ -1,13 +1,13 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import UnitOfMeasurementModel from '@src/models/UnitOfMeasurement';
 import ResponseHandler from '@src/helpers/ResponseHandler';
 import Constants from '@src/helpers/constants';
-
-
 import { Prisma } from '@prisma/client';
+import Validator from '@src/validator/Validator';
+import { unitOfMeasurementValidationSchema } from '@src/validator/schema';
 
 
-type ParamsType = Prisma.ProductUnitOfMeasurementCreateInput ;
+type ParamsType = Prisma.ProductUnitOfMeasurementCreateInput;
 
 export default class UnitOfMeasurement {
 
@@ -44,7 +44,7 @@ export default class UnitOfMeasurement {
 
         } catch (error) {
             console.log(error);
-            
+
             return ResponseHandler.error(res);
         }
 
@@ -53,9 +53,15 @@ export default class UnitOfMeasurement {
     public static async update(req: Request, res: Response) {
         try {
             const body = req.body;
-            const id = (typeof req.params.id === 'number') ? req.params.id : Number(req.params.id);       
-
-            if (id <= 0 || !await UnitOfMeasurementModel.isValid(Number(id))) return ResponseHandler.error(res, Constants.HTTP_STATUS_CODE_NOT_FOUND);
+            const id = Number(req.params.id);
+            if ((req.method=='PUT') && ( !(id > 0) || Number.isNaN(id))) {
+                return ResponseHandler.error(
+                    res,
+                    Constants.HTTP_STATUS_CODE_NOT_FOUND,
+                    "invalid id"
+                );
+            }
+            
             const params = await UnitOfMeasurement.handleData(body, res);
             params.updated_at = new Date();
             params.updated_by = 1
@@ -68,6 +74,66 @@ export default class UnitOfMeasurement {
         } catch (error) {
             return ResponseHandler.error(res);
         }
+    }
+
+    public static async validate(req: Request, res: Response, next: NextFunction) {
+
+        try {
+            const status = await Validator.validate(req.body, unitOfMeasurementValidationSchema, res)
+            if (status) return next();
+        } catch (error) {
+            return ResponseHandler.error(res, Constants.HTTP_STATUS_CODE_INTERNAL_SERVER_ERROR, 'Validation failed', error);
+        }
+
+    }
+
+
+
+    public static async validateProductData(req: Request, res: Response, next: NextFunction) : Promise<Response | void>{ 
+
+        try {
+            let { name  } = req.body; 
+            const id = Number(req.params.id);
+            if ((req.method=='PUT') && ( !(id > 0) || Number.isNaN(id))) {
+                return ResponseHandler.error(
+                    res,
+                    Constants.HTTP_STATUS_CODE_NOT_FOUND,
+                    "invalid id"
+                );
+            }
+
+            name =
+            typeof name === "string"
+                ? name
+                : String(name);
+            
+            if(req.method=='PUT' && id > 0){
+                const product = await UnitOfMeasurementModel.getByName(name); 
+                if (product && product?.id && product.id !== id) {
+                    return ResponseHandler.error(
+                        res,
+                        Constants.HTTP_STATUS_CODE_NOT_FOUND,
+                        "Category name all  ready exists"
+                    );
+                }else if (!(await UnitOfMeasurementModel.isValid(Number(id)))){
+                    return ResponseHandler.error(res, Constants.HTTP_STATUS_CODE_NOT_FOUND);
+                }
+            }else {
+                const isNameExists = await UnitOfMeasurementModel.isNameExists(name);
+                if (isNameExists) {
+                   return ResponseHandler.error(
+                        res,
+                        Constants.HTTP_STATUS_CODE_NOT_FOUND,
+                        "Category name all  ready exists"
+                    );
+                }
+            }
+    
+            return next();
+        } catch (error) {
+            return ResponseHandler.error(res, Constants.HTTP_STATUS_CODE_INTERNAL_SERVER_ERROR, 'Validation failed', error);
+        }
+
     }
 
 }

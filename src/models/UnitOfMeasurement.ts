@@ -6,38 +6,50 @@ const prisma = new PrismaClient();
 type paramsType = Prisma.ProductUnitOfMeasurementCreateInput;
 
 
-export default class UnitOfMeasurement{
+export default class UnitOfMeasurement {
 
-    public static async create(params : paramsType) {
+    public static async create(params: paramsType) {
         return await prisma.productUnitOfMeasurement.create({
             data: params
         })
     }
 
-    public static async update(id:number,params : paramsType) {
+    public static async update(id: number, params: paramsType) {
 
         return await prisma.productUnitOfMeasurement.update({
             where: {
                 id,
-              },
-              data: params
+            },
+            data: params
         })
 
     }
 
-    public static async get<T extends number>(id : NonZeroPositiveNumber<T> ) {
+    public static async getByName(name: string) {
+        return await prisma.productUnitOfMeasurement.findUnique({
+            where: { name }
+        });
+    }
+
+
+    public static async isNameExists(name: string): Promise<boolean> {
+        const attribute = await UnitOfMeasurement.getByName(name);
+        return !!attribute?.id
+    }
+
+    public static async get<T extends number>(id: NonZeroPositiveNumber<T>) {
 
         return await prisma.productUnitOfMeasurement.findUnique({
             where: { id }
-          });
+        });
     }
 
-    public static async isValid<T extends number>(id : NonZeroPositiveNumber<T> ) {
+    public static async isValid<T extends number>(id: NonZeroPositiveNumber<T>) {
 
         const attribute = await UnitOfMeasurement.get(id);
         return !!attribute?.id
-        
+
     }
-    
+
 
 }

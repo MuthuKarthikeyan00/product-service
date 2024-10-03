@@ -1,4 +1,4 @@
-import express, { Request, Response, Router } from 'express';
+import { Router } from 'express';
 import Product from '@src/controllers/Product';
 import Attribute from '@src/controllers/Attribute';
 import ProductType from '@src/controllers/ProductType';
@@ -10,20 +10,24 @@ export default class ProductsRouters {
 
     public static init(): Router {
 
-        this.router.post('/', Product.validate , Product.validateProductData , Product.create );
-        this.router.put('/:id', Product.update);
+        if (!this.router) {
+            throw new Error('This.router is null');
+        }
 
-        this.router.post('/attribute/', Attribute.create);
-        this.router.put('/attribute/:id', Attribute.update);
+        this.router.post('/', Product.validate, Product.validateProductData, Product.create);
+        this.router.put('/:id', Product.validate, Product.validateProductData, Product.update);
 
-        this.router.post('/type/', ProductType.create);
-        this.router.put('/type/:id', ProductType.update);
+        this.router.post('/attribute/', Attribute.validate, Attribute.validateProductData, Attribute.create);
+        this.router.put('/attribute/:id', Attribute.validate, Attribute.validateProductData, Attribute.update);
 
-        this.router.post('/category/', Category.create);
-        this.router.put('/category/:id', Category.update);
+        this.router.post('/type/', ProductType.validate, ProductType.validateProductData, ProductType.create);
+        this.router.put('/type/:id', ProductType.validate, ProductType.validateProductData, ProductType.update);
 
-        this.router.post('/unitOfMeasurement/', UnitOfMeasurement.create);
-        this.router.put('/unitOfMeasurement/:id', UnitOfMeasurement.update);
+        this.router.post('/category/', Category.validate, Category.validateProductData, Category.create);
+        this.router.put('/category/:id', Category.validate, Category.validateProductData, Category.update);
+
+        this.router.post('/unitOfMeasurement/', UnitOfMeasurement.validate, UnitOfMeasurement.validateProductData, UnitOfMeasurement.create);
+        this.router.put('/unitOfMeasurement/:id', UnitOfMeasurement.validate, UnitOfMeasurement.validateProductData, UnitOfMeasurement.update);
 
         return this.router;
     }
