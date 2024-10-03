@@ -3,13 +3,14 @@ import Product from '@src/controllers/Product';
 import Attribute from '@src/controllers/Attribute';
 import ProductType from '@src/controllers/ProductType';
 import Category from '@src/controllers/Category';
+import UnitOfMeasurement from '@src/controllers/UnitOfMeasurement';
 
 export default class ProductsRouters {
     private static router = Router();
 
     public static init(): Router {
 
-        this.router.post('/', Product.create);
+        this.router.post('/', Product.validate , Product.validateProductData , Product.create );
         this.router.put('/:id', Product.update);
 
         this.router.post('/attribute/', Attribute.create);
@@ -20,6 +21,9 @@ export default class ProductsRouters {
 
         this.router.post('/category/', Category.create);
         this.router.put('/category/:id', Category.update);
+
+        this.router.post('/unitOfMeasurement/', UnitOfMeasurement.create);
+        this.router.put('/unitOfMeasurement/:id', UnitOfMeasurement.update);
 
         return this.router;
     }

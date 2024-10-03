@@ -14,31 +14,38 @@ datasource db {
 }
 
 model Product {
-  id           Int           @id @default(autoincrement())
-  name         String
-  type_id      Int?
-  price        Float
-  description  String?
-  category_ids Int[]
-  attributes   Json?
-  parent_id    Int?
-  children     Product[]     @relation("ProductChildren")
-  weight       Float?
-  length       Float?
-  height       Float?
-  width        Float?
-  created_by   Int?
-  created_at   DateTime      @default(now())
-  updated_by   Int?
-  updated_at   DateTime?
-  parent       Product?      @relation("ProductChildren", fields: [parent_id], references: [id])
-  ProductType  ProductType?  @relation(fields: [type_id], references: [id])
-  ProductStockRecord  ProductStockRecord[]
+  id                       Int                       @id @default(autoincrement())
+  sku                      String                    @unique
+  type_id                  Int?
+  name                     String                    @unique
+  hsn_code                  Int?
+  sac_code                  Int?
+  price                    Float
+  tax                      Int?
+  tax_rate                  Int?
+  description              String?
+  category_ids             Int[]
+  attributes               Json?
+  parent_id                Int?
+  children                 Product[]                 @relation("ProductChildren")
+  unit_of_measurement        Int?
+  weight                   Float?
+  length                   Float?
+  height                   Float?
+  width                    Float?
+  created_by               Int?
+  created_at               DateTime                  @default(now())
+  updated_by               Int?
+  updated_at               DateTime?
+  parent                   Product?                  @relation("ProductChildren", fields: [parent_id], references: [id])
+  ProductType              ProductType?              @relation(fields: [type_id], references: [id])
+  ProductUnitOfMeasurement ProductUnitOfMeasurement? @relation(fields: [unit_of_measurement], references: [id])
+  ProductStockRecord       ProductStockRecord[]
 }
 
 model ProductType {
   id          Int       @id @default(autoincrement())
-  name        String
+  name        String    @unique
   description String?
   products    Product[]
   created_by  Int?
@@ -63,12 +70,12 @@ model ProductStockRecord {
 }
 
 model ProductCategory {
-  id            Int        @id @default(autoincrement())
-  name          String
+  id            Int               @id @default(autoincrement())
+  name          String            @unique
   description   String?
   parent_id     Int?
   created_by    Int?
-  created_at    DateTime   @default(now())
+  created_at    DateTime          @default(now())
   updated_by    Int?
   updated_at    DateTime?
   parent        ProductCategory?  @relation("ProductCategoryToProductCategory", fields: [parent_id], references: [id])
@@ -83,4 +90,16 @@ model ProductAttribute {
   created_at  DateTime  @default(now())
   updated_by  Int?
   updated_at  DateTime?
+}
+
+model ProductUnitOfMeasurement {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  code        String    @unique
+  description String?
+  created_by  Int?
+  created_at  DateTime  @default(now())
+  updated_by  Int?
+  updated_at  DateTime?
+  Product     Product[]
 }

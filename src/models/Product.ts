@@ -36,6 +36,21 @@ export default class Product{
         const product = await Product.get(id);
         return !!product?.id
     }
+
+
+
+    public static async getByName(name : string) {
+
+        return await prisma.product.findUnique({
+            where: { name }
+          });
+    }
+
+
+    public static async isNameExists(name : string) {
+        const product = await Product.getByName(name);
+        return !!product?.id
+    }
     
 
 }

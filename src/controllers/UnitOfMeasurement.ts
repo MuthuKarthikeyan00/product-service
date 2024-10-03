@@ -1,17 +1,18 @@
 import { Request, Response } from 'express';
-import AttributeModel from '@src/models/Attribute';
+import UnitOfMeasurementModel from '@src/models/UnitOfMeasurement';
 import ResponseHandler from '@src/helpers/ResponseHandler';
 import Constants from '@src/helpers/constants';
-import ProductTypeModel from '@src/models/ProductType';
 
 
-import { PrismaClient, Prisma } from '@prisma/client';
-type Params = Prisma.ProductTypeCreateInput ;
-
-export default class ProductType {
+import { Prisma } from '@prisma/client';
 
 
-    private static async handleData(body: any, res: Response): Promise<Params> {
+type ParamsType = Prisma.ProductUnitOfMeasurementCreateInput ;
+
+export default class UnitOfMeasurement {
+
+
+    private static async handleData(body: any, res: Response): Promise<ParamsType> {
 
         // valiadtion  
 
@@ -19,6 +20,7 @@ export default class ProductType {
 
         return {
             name: body.name,
+            code: body.code,
             description: body.description,
         }
 
@@ -30,17 +32,19 @@ export default class ProductType {
         try {
 
             const body = req.body;
-            const params = await ProductType.handleData(body, res);
+            const params = await UnitOfMeasurement.handleData(body, res);
 
             params.created_by = 1;
             params.created_at = new Date();
 
-            const data = await ProductTypeModel.create(params);
+            const data = await UnitOfMeasurementModel.create(params);
             if (data.id > 0) return ResponseHandler.success(res, Constants.HTTP_STATUS_CODE_CREATED, data);
 
             return ResponseHandler.error(res);
 
         } catch (error) {
+            console.log(error);
+            
             return ResponseHandler.error(res);
         }
 
@@ -51,13 +55,13 @@ export default class ProductType {
             const body = req.body;
             const id = (typeof req.params.id === 'number') ? req.params.id : Number(req.params.id);       
 
-            if (id <= 0 || !await ProductTypeModel.isValid(Number(id))) return ResponseHandler.error(res, Constants.HTTP_STATUS_CODE_NOT_FOUND);
-            const params = await ProductType.handleData(body, res);
+            if (id <= 0 || !await UnitOfMeasurementModel.isValid(Number(id))) return ResponseHandler.error(res, Constants.HTTP_STATUS_CODE_NOT_FOUND);
+            const params = await UnitOfMeasurement.handleData(body, res);
             params.updated_at = new Date();
             params.updated_by = 1
 
-            const data = await ProductTypeModel.update(id, params);
-            if (data.id > 0) return ResponseHandler.success(res, Constants.HTTP_STATUS_CODE_OK, data, 'type updated');
+            const data = await UnitOfMeasurementModel.update(id, params);
+            if (data.id > 0) return ResponseHandler.success(res, Constants.HTTP_STATUS_CODE_OK, data, 'Attribute updated');
 
             return ResponseHandler.error(res);
 
@@ -65,6 +69,5 @@ export default class ProductType {
             return ResponseHandler.error(res);
         }
     }
-
 
 }
