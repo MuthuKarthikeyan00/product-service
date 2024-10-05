@@ -7,6 +7,8 @@ import { Prisma } from "@prisma/client";
 import Validator from "@src/validator/Validator";
 import { productValidationSchema, ZodProductParams } from "@src/validator/schema";
 import UnitOfMeasurementModel from "@src/models/UnitOfMeasurement";
+import Sanitizer from "@src/helpers/Sanitizer";
+import Utils from "@src/helpers/Utils";
 
 
 type ProductParams = Prisma.ProductCreateInput & {
@@ -16,12 +18,6 @@ type ProductParams = Prisma.ProductCreateInput & {
 };
 
 export default class Product {
-
-
-    private static async checkProductFilds(params : ZodProductParams ){
-
-    }
-        // valiadtion   
 
     private static async handleData(
         body: any,
@@ -39,7 +35,7 @@ export default class Product {
 
         let sku = `sku1${body.name}`;
 
-        return {
+        return Sanitizer.sanitizeHtml({
             sku: sku,
             name: body.name,
             hsn_code:
@@ -63,7 +59,7 @@ export default class Product {
             height:
                 typeof body.height === "number" ? body.height : Number(body.height),
             width: typeof body.width === "number" ? body.width : Number(body.width),
-        };
+        });
     }
 
     public static async create(req: Request, res: Response) {
@@ -92,7 +88,7 @@ export default class Product {
             const body = req.body;
 
             const id = Number(req.params.id);
-            if ((req.method=='PUT') && ( !(id > 0) || Number.isNaN(id))) {
+            if ((Utils.checkRequestMethod(req, 'PUT')) && (Utils.isGraterthenZero(id)) ) {
                 return ResponseHandler.error(
                     res,
                     Constants.HTTP_STATUS_CODE_NOT_FOUND,
@@ -105,7 +101,7 @@ export default class Product {
             params.updated_by = 1;
 
             const data = await ProductModel.update(id, params);
-            if (data.id > 0)
+            if (Utils.isGraterthenZero(id))
                 return ResponseHandler.success(
                     res,
                     Constants.HTTP_STATUS_CODE_OK,
@@ -119,24 +115,12 @@ export default class Product {
         }
     }
 
-    public static async validate(req: Request, res: Response, next: NextFunction) {
-
-        try {
-            const status = await Validator.validate(req.body, productValidationSchema, res)
-            if (status) return next();
-        } catch (error) {
-            return ResponseHandler.error(res, Constants.HTTP_STATUS_CODE_INTERNAL_SERVER_ERROR, 'Validation failed', error);
-        }
-
-    }
-
-
     public static async validateProductData(req: Request, res: Response, next: NextFunction) : Promise<Response | void>{ 
 
         try {
             let { name , type_id ,unit_of_measurement } = req.body; 
             const id = Number(req.params.id);
-            if ((req.method=='PUT') && ( !(id > 0) || Number.isNaN(id))) {
+            if ((Utils.checkRequestMethod(req, 'PUT')) && (Utils.isGraterthenZero(id)) ) {
                 return ResponseHandler.error(
                     res,
                     Constants.HTTP_STATUS_CODE_NOT_FOUND,
@@ -144,12 +128,12 @@ export default class Product {
                 );
             }
             name =
-            typeof name === "string"
+            Utils.isString(name)
                 ? name
                 : String(name);
             
-            if(req.method=='PUT' && id > 0){
-                const product = await ProductModel.getByName(name); 
+            if ((Utils.checkRequestMethod(req, 'PUT')) && (Utils.isGraterthenZero(id)) ) {
+                const product = await ProductModel.getByName(Sanitizer.sanitizeString(name)); 
                 if (product && product?.id && product.id !== id) {
                     return ResponseHandler.error(
                         res,
@@ -171,7 +155,7 @@ export default class Product {
             }
 
             const typeId =
-                typeof type_id === "number"
+                Utils.isNumber(type_id)
                     ? type_id
                     : Number(type_id);
     
@@ -185,7 +169,7 @@ export default class Product {
             }
     
             const unitOfMeasurement =
-                typeof unit_of_measurement === "number"
+                Utils.isNumber(unit_of_measurement)
                     ? unit_of_measurement
                     : Number(unit_of_measurement);
     
@@ -203,4 +187,18 @@ export default class Product {
         }
 
     }
+
+    public static async validate(req: Request, res: Response, next: NextFunction) : Promise<Response | void> {
+
+        try {
+            const status = await Validator.validate(req.body, productValidationSchema, res)
+            if (status) return next();
+        } catch (error) {
+            return ResponseHandler.error(res, Constants.HTTP_STATUS_CODE_INTERNAL_SERVER_ERROR, 'Validation failed', error);
+        }
+
+    }
 }
+
+
+

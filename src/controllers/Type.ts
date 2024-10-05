@@ -7,7 +7,7 @@ import { productTypeValidationSchema } from '@src/validator/schema';
 import Validator from '@src/validator/Validator';
 type Params = Prisma.ProductTypeCreateInput ;
 
-export default class ProductType {
+export default class Type {
 
 
     private static async handleData(body: any, res: Response): Promise<Params> {
@@ -29,7 +29,7 @@ export default class ProductType {
         try {
 
             const body = req.body;
-            const params = await ProductType.handleData(body, res);
+            const params = await Type.handleData(body, res);
 
             params.created_by = 1;
             params.created_at = new Date();
@@ -58,7 +58,7 @@ export default class ProductType {
                 );
             }
 
-            const params = await ProductType.handleData(body, res);
+            const params = await Type.handleData(body, res);
             params.updated_at = new Date();
             params.updated_by = 1
 
@@ -120,8 +120,7 @@ export default class ProductType {
 
     }
 
-
-    public static async validate(req: Request, res: Response, next: NewableFunction) : Promise<Response | void> {
+    public static async validate(req: Request, res: Response, next: NextFunction) : Promise<Response | void> {
         try {
             if (!req.body) {
                 return ResponseHandler.error(res, Constants.HTTP_STATUS_CODE_BAD_REQUEST, 'No data provided');
@@ -134,6 +133,9 @@ export default class ProductType {
         }
 
     }
+
+
+
 
 
 }

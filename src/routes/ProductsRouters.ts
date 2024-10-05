@@ -1,9 +1,9 @@
 import { Router } from 'express';
 import Product from '@src/controllers/Product';
 import Attribute from '@src/controllers/Attribute';
-import ProductType from '@src/controllers/ProductType';
 import Category from '@src/controllers/Category';
 import UnitOfMeasurement from '@src/controllers/UnitOfMeasurement';
+import Type from '@src/controllers/Type';
 
 export default class ProductsRouters {
     private static router = Router();
@@ -20,8 +20,8 @@ export default class ProductsRouters {
         this.router.post('/attribute/', Attribute.validate, Attribute.validateProductData, Attribute.create);
         this.router.put('/attribute/:id', Attribute.validate, Attribute.validateProductData, Attribute.update);
 
-        this.router.post('/type/', ProductType.validate, ProductType.validateProductData, ProductType.create);
-        this.router.put('/type/:id', ProductType.validate, ProductType.validateProductData, ProductType.update);
+        this.router.post('/type/', Type.validate, Type.validateProductData, Type.create);
+        this.router.put('/type/:id', Type.validate, Type.validateProductData, Type.update);
 
         this.router.post('/category/', Category.validate, Category.validateProductData, Category.create);
         this.router.put('/category/:id', Category.validate, Category.validateProductData, Category.update);

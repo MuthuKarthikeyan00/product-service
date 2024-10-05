@@ -1,0 +1,62 @@
+import {Request} from "express";
+
+export default class Utils {
+
+
+    public static  isString(param : any) : boolean {
+        return typeof param === 'string'
+    }
+
+    public static  isNumber(param : any) : boolean {
+        return typeof param === 'number'
+    }
+
+    public static  isBoolean(param : any) : boolean {
+        return typeof param === 'boolean'
+    }
+
+    public static  isArray(param : any) : boolean {
+        return Array.isArray(param)
+    }
+
+    public static  isObject(param : any) : boolean {
+        return typeof param === 'object'
+    }
+
+    public static  isEmpty(param : any) : boolean {
+        return  param == ''
+    }
+
+    public static  isNull(param : any) : boolean {
+        return  param == ''
+    }
+
+    public static  isUndefined(param : any) : boolean {
+        return  param == undefined;
+    }
+
+    public static  isGraterthenZero(param : any) : boolean {
+        return   this.isNumber(param) && param > 0;
+    }
+
+    public static  isValid(param : any) : boolean {
+        return  this.isEmpty(param) && this.isNull(param) && this.isUndefined(param);
+    }
+
+    public static  toLowerCase(param : string) : string {
+        return  param.toLowerCase() ;
+    }
+
+    public static  toUpperCase(param : string) : string {
+        return  param.toUpperCase() ;
+    }
+
+    public static  checkRequestMethod(req : Request , method : string ) : boolean {
+        return  req.method === this.toUpperCase(method)
+    }
+
+
+
+
+
+}
