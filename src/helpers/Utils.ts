@@ -55,6 +55,15 @@ export default class Utils {
         return  req.method === this.toUpperCase(method)
     }
 
+    public static getHttpParam(req : Request , key : string ,  method : string = 'PUT') : boolean | number {
+        if(!this.checkRequestMethod(req,method) || !req.params[key] || !this.isGraterthenZero(req.params[key]) ) {
+            return false
+        }   
+        return Number(req.params[key])
+    }
+
+
+
 
 
 

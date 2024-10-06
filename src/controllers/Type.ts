@@ -5,6 +5,8 @@ import ProductTypeModel from '@src/models/ProductType';
 import {  Prisma } from '@prisma/client';
 import { productTypeValidationSchema } from '@src/validator/schema';
 import Validator from '@src/validator/Validator';
+import Utils from '@src/helpers/Utils';
+import Sanitizer from '@src/helpers/Sanitizer';
 type Params = Prisma.ProductTypeCreateInput ;
 
 export default class Type {
@@ -16,10 +18,10 @@ export default class Type {
 
         // sanditaion 
 
-        return {
+        return Sanitizer.sanitizeHtml({
             name: body.name,
             description: body.description,
-        }
+        });
 
 
     }
@@ -33,7 +35,7 @@ export default class Type {
 
             params.created_by = 1;
             params.created_at = new Date();
-
+            this.validateProductData(req, res);
             const data = await ProductTypeModel.create(params);
             if (data.id > 0) return ResponseHandler.success(res, Constants.HTTP_STATUS_CODE_CREATED, data);
 
@@ -57,7 +59,7 @@ export default class Type {
                     "invalid id"
                 );
             }
-
+            this.validateProductData(req, res);
             const params = await Type.handleData(body, res);
             params.updated_at = new Date();
             params.updated_by = 1
@@ -73,7 +75,7 @@ export default class Type {
     }
 
 
-    public static async validateProductData(req: Request, res: Response, next: NextFunction) : Promise<Response | void>{ 
+    public static async validateProductData(req: Request, res: Response) : Promise<Response | Boolean>{ 
 
         try {
             let { name  } = req.body; 
@@ -87,12 +89,12 @@ export default class Type {
             }
 
             name =
-            typeof name === "string"
-                ? name
-                : String(name);
+                Utils.isString(name)
+                    ? name
+                    : String(name);
             
             if(req.method=='PUT' && id > 0){
-                const product = await ProductTypeModel.getByName(name); 
+                const product = await ProductTypeModel.getByName(Sanitizer.sanitizeString(name)); 
                 if (product && product?.id && product.id !== id) {
                     return ResponseHandler.error(
                         res,
@@ -113,7 +115,7 @@ export default class Type {
                 }
             }
     
-            return next();
+            return true;
         } catch (error) {
             return ResponseHandler.error(res, Constants.HTTP_STATUS_CODE_INTERNAL_SERVER_ERROR, 'Validation failed', error);
         }

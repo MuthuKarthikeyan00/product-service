@@ -22,15 +22,15 @@ export default class Product {
     private static async handleData(
         body: any,
         res: Response
-    ): Promise<ProductParams > {
-      
-        let categoryIds = Array.isArray(body.category_ids)
+    ): Promise<ProductParams> {
+
+        let categoryIds = Utils.isArray(body.category_ids)
             ? body.category_ids.map((item: any) => Number(item))
             : [];
 
-        let children = Array.isArray(body.children)
+        let children = Utils.isArray(body.children)
             ? body.children.map((item: any) => Number(item))
-            : [];    
+            : [];
         children = { create: [] };
 
         let sku = `sku1${body.name}`;
@@ -39,26 +39,26 @@ export default class Product {
             sku: sku,
             name: body.name,
             hsn_code:
-                typeof body.hsn_code === "number" ? body.hsn_code : Number(body.hsn_code),
+                Utils.isNumber(body.hsn_code) ? body.hsn_code : Number(body.hsn_code),
             sac_code:
-                typeof body.sac_code === "number" ? body.sac_code : Number(body.sac_code),
+                Utils.isNumber(body.sac_code) ? body.sac_code : Number(body.sac_code),
             tax_rate:
-                typeof body.tax_rate === "number" ? body.tax_rate : Number(body.tax_rate),
-            tax: typeof body.tax === "number" ? body.tax : Number(body.tax),
-            unit_of_measurement:body.unit_of_measurement,
-            type_id:body.type_id,
-            price: typeof body.price === "number" ? body.price : Number(body.price),
+                Utils.isNumber(body.tax_rate) ? body.tax_rate : Number(body.tax_rate),
+            tax: Utils.isNumber(body.tax) ? body.tax : Number(body.tax),
+            unit_of_measurement: body.unit_of_measurement,
+            type_id: body.type_id,
+            price: Utils.isNumber(body.price) ? body.price : Number(body.price),
             description: body.description,
             category_ids: categoryIds,
             attributes: body.attributes,
             children: children,
             weight:
-                typeof body.weight === "number" ? body.weight : Number(body.weight),
+                Utils.isNumber(body.weight) ? body.weight : Number(body.weight),
             length:
-                typeof body.length === "number" ? body.length : Number(body.length),
+                Utils.isNumber(body.length) ? body.length : Number(body.length),
             height:
-                typeof body.height === "number" ? body.height : Number(body.height),
-            width: typeof body.width === "number" ? body.width : Number(body.width),
+                Utils.isNumber(body.height) ? body.height : Number(body.height),
+            width: Utils.isNumber(body.width) ? body.width : Number(body.width),
         });
     }
 
@@ -66,12 +66,13 @@ export default class Product {
         try {
             const body = req.body;
             const params = await Product.handleData(body, res);
+            this.validateProductData(req, res);
 
             params.created_by = 1;
             params.created_at = new Date();
 
             const data = await ProductModel.create(params);
-            if (data.id > 0)
+            if (Utils.isGraterthenZero(data.id))
                 return ResponseHandler.success(
                     res,
                     Constants.HTTP_STATUS_CODE_CREATED,
@@ -87,8 +88,10 @@ export default class Product {
         try {
             const body = req.body;
 
+            this.validateProductData(req, res);
+
             const id = Number(req.params.id);
-            if ((Utils.checkRequestMethod(req, 'PUT')) && (Utils.isGraterthenZero(id)) ) {
+            if ((Utils.checkRequestMethod(req, 'PUT')) && (Utils.isGraterthenZero(id))) {
                 return ResponseHandler.error(
                     res,
                     Constants.HTTP_STATUS_CODE_NOT_FOUND,
@@ -115,12 +118,12 @@ export default class Product {
         }
     }
 
-    public static async validateProductData(req: Request, res: Response, next: NextFunction) : Promise<Response | void>{ 
+    public static async validateProductData(req: Request, res: Response): Promise<Response | Boolean> {
 
         try {
-            let { name , type_id ,unit_of_measurement } = req.body; 
-            const id = Number(req.params.id);
-            if ((Utils.checkRequestMethod(req, 'PUT')) && (Utils.isGraterthenZero(id)) ) {
+            let { name, type_id, unit_of_measurement } = req.body;
+            const id = Utils.getHttpParam(req, 'id');
+            if (!Utils.isGraterthenZero(id)) {
                 return ResponseHandler.error(
                     res,
                     Constants.HTTP_STATUS_CODE_NOT_FOUND,
@@ -128,25 +131,25 @@ export default class Product {
                 );
             }
             name =
-            Utils.isString(name)
-                ? name
-                : String(name);
-            
-            if ((Utils.checkRequestMethod(req, 'PUT')) && (Utils.isGraterthenZero(id)) ) {
-                const product = await ProductModel.getByName(Sanitizer.sanitizeString(name)); 
+                Utils.isString(name)
+                    ? name
+                    : String(name);
+
+            if (Utils.isGraterthenZero(id)) {
+                const product = await ProductModel.getByName(Sanitizer.sanitizeString(name));
                 if (product && product?.id && product.id !== id) {
                     return ResponseHandler.error(
                         res,
                         Constants.HTTP_STATUS_CODE_NOT_FOUND,
                         "Product name all  ready exists"
                     );
-                }else if (!(await ProductModel.isValid(Number(id)))){
+                } else if (!(await ProductModel.isValid(Number(id)))) {
                     return ResponseHandler.error(res, Constants.HTTP_STATUS_CODE_NOT_FOUND);
                 }
-            }else {
+            } else {
                 const isNameExists = await ProductModel.isNameExists(name);
                 if (isNameExists) {
-                   return ResponseHandler.error(
+                    return ResponseHandler.error(
                         res,
                         Constants.HTTP_STATUS_CODE_NOT_FOUND,
                         "Product name all  ready exists"
@@ -158,7 +161,7 @@ export default class Product {
                 Utils.isNumber(type_id)
                     ? type_id
                     : Number(type_id);
-    
+
             const isValidProductType = await ProductTypeModel.isValid(typeId);
             if (!isValidProductType) {
                 return ResponseHandler.error(
@@ -167,12 +170,12 @@ export default class Product {
                     "Product type not found"
                 );
             }
-    
+
             const unitOfMeasurement =
                 Utils.isNumber(unit_of_measurement)
                     ? unit_of_measurement
                     : Number(unit_of_measurement);
-    
+
             const isValidUnitOfMeasurement = await UnitOfMeasurementModel.isValid(unitOfMeasurement);
             if (!isValidUnitOfMeasurement) {
                 return ResponseHandler.error(
@@ -181,14 +184,14 @@ export default class Product {
                     "Unit Of Measurement type not found"
                 );
             }
-            return next();
+            return true;
         } catch (error) {
             return ResponseHandler.error(res, Constants.HTTP_STATUS_CODE_INTERNAL_SERVER_ERROR, 'Validation failed', error);
         }
 
     }
 
-    public static async validate(req: Request, res: Response, next: NextFunction) : Promise<Response | void> {
+    public static async validate(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
 
         try {
             const status = await Validator.validate(req.body, productValidationSchema, res)

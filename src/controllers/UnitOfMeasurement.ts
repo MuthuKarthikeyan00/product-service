@@ -5,6 +5,8 @@ import Constants from '@src/helpers/constants';
 import { Prisma } from '@prisma/client';
 import Validator from '@src/validator/Validator';
 import { unitOfMeasurementValidationSchema } from '@src/validator/schema';
+import Utils from '@src/helpers/Utils';
+import Sanitizer from '@src/helpers/Sanitizer';
 
 
 type ParamsType = Prisma.ProductUnitOfMeasurementCreateInput;
@@ -18,11 +20,11 @@ export default class UnitOfMeasurement {
 
         // sanditaion 
 
-        return {
+        return Sanitizer.sanitizeHtml( {
             name: body.name,
             code: body.code,
             description: body.description,
-        }
+        });
 
 
     }
@@ -36,7 +38,7 @@ export default class UnitOfMeasurement {
 
             params.created_by = 1;
             params.created_at = new Date();
-
+            this.validateProductData(req, res);
             const data = await UnitOfMeasurementModel.create(params);
             if (data.id > 0) return ResponseHandler.success(res, Constants.HTTP_STATUS_CODE_CREATED, data);
 
@@ -54,6 +56,7 @@ export default class UnitOfMeasurement {
         try {
             const body = req.body;
             const id = Number(req.params.id);
+            this.validateProductData(req, res);
             if ((req.method=='PUT') && ( !(id > 0) || Number.isNaN(id))) {
                 return ResponseHandler.error(
                     res,
@@ -89,7 +92,7 @@ export default class UnitOfMeasurement {
 
 
 
-    public static async validateProductData(req: Request, res: Response, next: NextFunction) : Promise<Response | void>{ 
+    public static async validateProductData(req: Request, res: Response) : Promise<Response | Boolean>{ 
 
         try {
             let { name  } = req.body; 
@@ -103,12 +106,12 @@ export default class UnitOfMeasurement {
             }
 
             name =
-            typeof name === "string"
-                ? name
-                : String(name);
+                Utils.isString(name)
+                    ? name
+                    : String(name);
             
             if(req.method=='PUT' && id > 0){
-                const product = await UnitOfMeasurementModel.getByName(name); 
+                const product = await UnitOfMeasurementModel.getByName(Sanitizer.sanitizeString(name)); 
                 if (product && product?.id && product.id !== id) {
                     return ResponseHandler.error(
                         res,
@@ -129,7 +132,7 @@ export default class UnitOfMeasurement {
                 }
             }
     
-            return next();
+            return false;
         } catch (error) {
             return ResponseHandler.error(res, Constants.HTTP_STATUS_CODE_INTERNAL_SERVER_ERROR, 'Validation failed', error);
         }

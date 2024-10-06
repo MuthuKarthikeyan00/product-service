@@ -8,9 +8,11 @@ import ProductType from '@src/models/ProductType';
 import { PrismaClient, Prisma } from '@prisma/client';
 import { attributeValidationSchema } from '@src/validator/schema';
 import Validator from '@src/validator/Validator';
+import Sanitizer from '@src/helpers/Sanitizer';
+import Utils from '@src/helpers/Utils';
 
 
-type Params = Prisma.ProductAttributeCreateInput ;
+type Params = Prisma.ProductAttributeCreateInput;
 
 export default class Attribute {
 
@@ -21,10 +23,10 @@ export default class Attribute {
 
         // sanditaion 
 
-        return {
+        return Sanitizer.sanitizeHtml({
             name: body.name,
             description: body.description,
-        }
+        });
 
 
     }
@@ -38,7 +40,7 @@ export default class Attribute {
 
             params.created_by = 1;
             params.created_at = new Date();
-
+            this.validateProductData(req, res);
             const data = await AttributeModel.create(params);
             if (data.id > 0) return ResponseHandler.success(res, Constants.HTTP_STATUS_CODE_CREATED, data);
 
@@ -46,7 +48,7 @@ export default class Attribute {
 
         } catch (error) {
             console.log(error);
-            
+
             return ResponseHandler.error(res);
         }
 
@@ -56,14 +58,15 @@ export default class Attribute {
         try {
             const body = req.body;
             const id = Number(req.params.id);
-            if ((req.method=='PUT') && ( !(id > 0) || Number.isNaN(id))) {
+            this.validateProductData(req, res);
+            if ((req.method == 'PUT') && (!(id > 0) || Number.isNaN(id))) {
                 return ResponseHandler.error(
                     res,
                     Constants.HTTP_STATUS_CODE_NOT_FOUND,
                     "invalid id"
                 );
             }
-          
+
             const params = await Attribute.handleData(body, res);
             params.updated_at = new Date();
             params.updated_by = 1
@@ -80,12 +83,12 @@ export default class Attribute {
 
 
 
-    public static async validateProductData(req: Request, res: Response, next: NextFunction) : Promise<Response | void>{ 
+    public static async validateProductData(req: Request, res: Response): Promise<Response | Boolean> {
 
         try {
-            let { name  } = req.body; 
-            const id = Number(req.params.id);
-            if ((req.method=='PUT') && ( !(id > 0) || Number.isNaN(id))) {
+            let { name } = req.body;
+            const id = Utils.getHttpParam(req, 'id');
+            if (!Utils.isGraterthenZero(id)) {
                 return ResponseHandler.error(
                     res,
                     Constants.HTTP_STATUS_CODE_NOT_FOUND,
@@ -94,33 +97,33 @@ export default class Attribute {
             }
 
             name =
-            typeof name === "string"
-                ? name
-                : String(name);
-            
-            if(req.method=='PUT' && id > 0){
-                const product = await AttributeModel.getByName(name); 
+                Utils.isString(name)
+                    ? name
+                    : String(name);
+
+            if (Utils.isGraterthenZero(id)) {
+                const product = await AttributeModel.getByName(Sanitizer.sanitizeString(name));
                 if (product && product?.id && product.id !== id) {
                     return ResponseHandler.error(
                         res,
                         Constants.HTTP_STATUS_CODE_NOT_FOUND,
                         "Attribute name all  ready exists"
                     );
-                }else if (!(await AttributeModel.isValid(Number(id)))){
+                } else if (!(await AttributeModel.isValid(Number(id)))) {
                     return ResponseHandler.error(res, Constants.HTTP_STATUS_CODE_NOT_FOUND);
                 }
-            }else {
+            } else {
                 const isNameExists = await AttributeModel.isNameExists(name);
                 if (isNameExists) {
-                   return ResponseHandler.error(
+                    return ResponseHandler.error(
                         res,
                         Constants.HTTP_STATUS_CODE_NOT_FOUND,
                         "Attribute name all  ready exists"
                     );
                 }
             }
-    
-            return next();
+
+            return true;
         } catch (error) {
             return ResponseHandler.error(res, Constants.HTTP_STATUS_CODE_INTERNAL_SERVER_ERROR, 'Validation failed', error);
         }
